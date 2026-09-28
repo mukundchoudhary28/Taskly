@@ -15,6 +15,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Living docs: `docs/ARCHITECTURE.md`, `docs/CHANGELOG.md`, `docs/PROJECT_STATUS.md`
 
 - `create-spec` project skill (`.claude/skills/create-spec/`) with a PRD template, and a `specs/` folder for PRDs and EDDs
+- `phase-00-skeleton-application` PRD (`.claude/specs/phase-00-skeleton-application.md`, Approved): scopes the local, containerized app skeleton — FastAPI `GET /health` with a database check, a React page showing the result, a local Postgres, and Alembic initialized with an empty baseline migration. Splits `ROADMAP.md`'s Phase 0 into this spec plus a follow-up `phase-00-cloud-deployment` spec (AWS infra + CI/CD); `ROADMAP.md` itself is unchanged
+- FastAPI app (`backend/app/main.py`) with `GET /health` reporting API and database status; bounded DB timeout (default 3s); structured logging of each result; no internal error detail leaked on DB failure (BR-1)
+- Backend config via `pydantic-settings` (`app/core/config.py`); `backend/.env.example`
+- Async SQLAlchemy engine (`app/core/db.py`) using the `postgresql+psycopg` (psycopg 3) dialect for both the app and Alembic
+- Alembic initialized (`backend/alembic/`, async template) with an empty baseline migration creating no product tables
+- `backend/Dockerfile` and `backend/.dockerignore` — backend buildable/runnable as a container with only `DATABASE_URL` supplied
+- Root `docker-compose.yml` with a `db` service (`postgres:16`, named volume, healthcheck)
+- Frontend scaffolded with Vite + React + TypeScript; `src/api/`, `src/pages/`, `src/components/`, `src/hooks/` structure; single `HealthPage` showing loading/healthy/degraded/error states, distinguished by text
+- Backend unit tests (`test_health.py`, `test_health_service.py`) and integration tests (`test_health_integration.py`, `test_migrations.py`) covering AC-1, AC-2, AC-9, AC-11
 
 ### Changed
 - Project docs stay under `.claude/` (`CLAUDE.md`, `constitution/`, `docs/`, `specs/`, `skills/`). Path references in `CLAUDE.md`, `TECH_STACK.md`, `ROADMAP.md`, `docs/ARCHITECTURE.md` and the `create-spec` skill now say `.claude/...`
